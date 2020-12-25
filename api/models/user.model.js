@@ -28,10 +28,7 @@ const user = new Schema({
     },
     avatar: {
         type: String,
-    },
-    is_verify: {
-        type: Boolean,
-        default: false
+        default: "../assets/img/account.png",
     },
     token: {
         type: String

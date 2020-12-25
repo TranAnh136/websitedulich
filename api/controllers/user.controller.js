@@ -81,11 +81,11 @@ exports.register = async (req, res) => {
         return;
     }
     const token = randomstring.generate();
-    let sendEmail = await nodemailer.sendEmail(email, token);
-    if (!sendEmail) {
-        res.status(500).json({ msg: 'Send email fail' });
-        return;
-    }   
+  //  let sendEmail = await nodemailer.sendEmail(email, token);
+ //   if (!sendEmail) {
+ //       res.status(500).json({ msg: 'Send email fail' });
+  //      return;
+ //   }   
     password = bcrypt.hashSync(password, 10);
     const newUser = new user({
         name: name,
@@ -94,7 +94,6 @@ exports.register = async (req, res) => {
         phone: phone,
         address: address,
         role: 0,
-        avatar: avatar.jpg,
         token: token
     });
     try {

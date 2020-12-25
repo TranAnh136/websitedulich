@@ -1,5 +1,6 @@
 'use strict'
 const user_controller = require('../controllers/user.controller');
+const auth = require('../utils/auth');
 
 module.exports = (app) => {
     app.route('/user/register')
@@ -38,7 +39,8 @@ module.exports = (app) => {
     app.route('/user/createtourdesign')
     .post(user_controller.CreateNewTourDesign)
 
-    
+    app.route('/auth')
+    .post(auth.verify)
 
 
 

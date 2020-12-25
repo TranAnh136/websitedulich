@@ -8,6 +8,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 const flash = require('connect-flash');
+const cors = require('cors');
 // const cors = require('cors');
 const userRouter = require('./api/routers/user.router');
 const categoryTourRouter = require('./api/routers/category_tour.router');
@@ -37,7 +38,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(flash()); // use connect-flash for flash messages stored in session
 
 app.set('view engine', 'ejs'); // cài đặt ejs là templating
-
+app.use(cors())
 userRouter(app);
 categoryTourRouter(app);
 categoryBlogRouter(app);
