@@ -41,7 +41,4 @@ module.exports = (app) => {
 
     app.route('/auth')
     .post(auth.verify)
-
-
-
 }
