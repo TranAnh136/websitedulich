@@ -155,11 +155,6 @@ exports.login = async (req, res) => {
         res.status(422).json({msg: "Invalid data"});
         return;
     }
-
-    if(!userFind.is_verify){
-        res.status(401).json({msg: 'no_registration_confirmation'});
-        return;
-    }
     
     if(!bcrypt.compareSync(password, userFind.password)){
         res.status(422).json({msg: 'Invalid data'});
