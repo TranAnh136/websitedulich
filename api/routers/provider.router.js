@@ -48,7 +48,9 @@ module.exports = app => {
 
   app.route('/provider/deletetour')
   .post(provider_controller.deleteTour)
-
+  
+  app.route('/provider/:id')
+  .get(provider_controller.getProviderById);
 
 
 

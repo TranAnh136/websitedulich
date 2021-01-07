@@ -20,6 +20,7 @@ const locationRouter = require('./api/routers/location.router');
 const adminRouter = require('./api/routers/admin.router');
 const tourRouter = require('./api/routers/tour.router');
 const provinceRouter = require('./api/routers/province.router');
+const blogRouter = require('./api/routers/blog.router')
 // mongoose.Promise = global.Promise;
 
 mongoose.connect('mongodb+srv://admin:admin@cluster0.v7yzg.mongodb.net/webdulich?retryWrites=true&w=majority', {useNewUrlParser: true, useNewUrlParser: true,  useUnifiedTopology: true}, function(err){
@@ -39,16 +40,18 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 
 app.set('view engine', 'ejs'); // cài đặt ejs là templating
 app.use(cors())
+app.use(express.static('public'))
 userRouter(app);
 categoryTourRouter(app);
 categoryBlogRouter(app);
 providerRouter(app);
 bookingRouter(app);
-commentRouter(app)
+commentRouter(app);
 tourRouter(app);
 locationRouter(app);
 adminRouter(app);
 provinceRouter(app);
+blogRouter(app);
 app.get('/', (req, res) => {res.send('welcome to our website')})
 
 app.listen(port, () => console.log("server running on port " + port));

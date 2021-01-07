@@ -9,7 +9,7 @@ exports.getAllProvince = async (req, res) => {
         }
         let data = [];
         for(let i = 0; i < docs.length; i++) {
-            data.push({name_province: docs[i].name_province})
+            data.push(docs[i])
         }
         res.status(200).json({data: data})
     })

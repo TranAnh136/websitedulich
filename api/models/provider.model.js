@@ -26,13 +26,24 @@ const provider = new Schema({
         type: String
     },
     service: {
-        type: String
+        type: [String],
+        required: true
     },
     traveler: {
-        type: String
+        type: Number,
+        default: 0, 
+        validate : {
+            validator : Number.isInteger,
+            message   : '{VALUE} is not an integer value'
+          }
     },
     revenue: {
-        type: String
+        type: Number,
+        default: 0, 
+        validate : {
+            validator : Number.isInteger,
+            message   : '{VALUE} is not an integer value'
+          }
     },
     prize: {
         type: [String],

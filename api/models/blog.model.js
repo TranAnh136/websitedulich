@@ -24,7 +24,7 @@ const blog = new Schema({
         required: [true, "can't be blank"]
     },
     content:{
-        type: [
+        type: 
             {
                 first_content: String,
                 content_highlight: String,
@@ -34,7 +34,7 @@ const blog = new Schema({
                 content_highlight2: String,
                 images: [String],
             }
-        ],
+        ,
         required : true,
         minlength: 1,
     }

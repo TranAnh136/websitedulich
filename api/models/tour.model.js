@@ -31,7 +31,7 @@ const tour = new Schema({
         default: 0, 
       
     },
-    id_discount: {
+    is_discount: {
         type: Boolean,
         default: false,
     },
@@ -47,7 +47,7 @@ const tour = new Schema({
         type: String,
         required: [true, "can't be blank"],
     },
-    palace_depart: {
+    place_depart: {
         type: String,
         required: [true, "can't be blank"],
     },
@@ -59,10 +59,10 @@ const tour = new Schema({
         type: [
             {
                 location_id: String,
-                province_id: String,
                 date_happen: Date,
+                title: String,
                 description: String, 
-                images: [String],
+                images: String
             }
         ],
         required : true,

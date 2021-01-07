@@ -168,6 +168,7 @@ exports.getNameByID = async (req, res) => {
         res.status(422).json({ msg: 'Invalid data' });
         return;
     }
+    console.log(req.params.id)
     let result
     try {
         result = await provider.findById(req.params.id);
@@ -182,6 +183,27 @@ exports.getNameByID = async (req, res) => {
         return;
     }
     res.status(200).json({name: result.name})
+}
+
+exports.getProviderById = async (req, res) => {
+    if(req.params.id === 'undefined') {
+        res.status(422).json({ msg: 'Invalid data' });
+        return;
+    }
+    let result
+    try {
+        result = await provider.findById(req.params.id);
+    }
+    catch(err) {
+        console.log(err)
+        res.status(500).json({msg: err})
+        return;
+    }
+    if(result === null){
+        res.status(404).json({msg: "not found"})
+        return;
+    }
+    res.status(200).json({data: result})
 }
 
 exports.getIDBySearchText = async (searchText) => {

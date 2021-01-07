@@ -1,5 +1,6 @@
 'use strict'
 const user_controller = require('../controllers/user.controller');
+const contact_controller = require('../controllers/contact.controller')
 const auth = require('../utils/auth');
 
 module.exports = (app) => {
@@ -27,8 +28,11 @@ module.exports = (app) => {
     app.route('/user/updatepassword')
     .post(user_controller.updatePassword)
 
-    app.route('/user/myhistory')
+    app.route('/user/myhistory/:user_id')
     .post(user_controller.getHistoryByUser)
+
+    app.route('/user/alltourdesignbyuser/:user_id')
+    .get(user_controller.getAllTourDesignByUser)
 
     app.route('/user/mytourdesign')
     .post(user_controller.showTourDesign)
@@ -41,4 +45,7 @@ module.exports = (app) => {
 
     app.route('/auth')
     .post(auth.verify)
+
+    app.route('/user/contact')
+    .post(contact_controller.addContact)
 }

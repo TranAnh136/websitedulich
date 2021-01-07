@@ -19,12 +19,12 @@ const tour_design = new Schema({
         type: String,
         default: "",
     },
-    start_time: {
+    time_start: {
         type: Date,
         required: true,
         default: Date.now
     },
-    end_time: {
+    time_end: {
         type: Date,
         required: true,
         default: Date.now
@@ -34,7 +34,11 @@ const tour_design = new Schema({
         default: 0, 
       
     },
-    palace_depart: {
+    image_cover: {
+        type: String,
+        default: "..\\assets\\img\\tour\\design-tour-cover.jpg"
+    },
+    place_depart: {
         type: String,
         required: [true, "can't be blank"],
     },
@@ -46,14 +50,20 @@ const tour_design = new Schema({
         type: Boolean,
         default: false,
     },
+    confirm: {
+        type: Boolean
+    },
     route: {
         type: [
             {
                 location_id: String,
-                province_id: String,
                 date_happen: Date,
+                title: String,
                 description: String, 
-                images: [String],
+                images: {
+                    type :String,
+                    default : "..\\assets\\img\\tour\\rsz_design-tour-slider.jpg"
+                }
             }
         ],
         required : true,

@@ -31,13 +31,19 @@ const booking  = new Schema ({
     },
     number_of_customer:{
         type:Number,
-        default: 0,
+        default: 1,
     },
     status_booking: {
         type: String,
     },
+    payment_methods :{
+        type : String
+    },
     note: {
         type: String,
+    },
+    token : {
+        type : String
     },
     list_customer: {
         type: [

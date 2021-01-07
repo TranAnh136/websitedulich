@@ -35,7 +35,7 @@ const booking = require('../models/booking.model');
 
 const storage = multer.diskStorage({
     destination: function(req, file, cb){
-        cb(null, 'public/upload') //noi luu hinh tu set lai
+        cb(null, 'public/avatar') //noi luu hinh tu set lai
     },
     filename: function(req, file, cb){
         cb(null, Date.now()+ "-"+ file.originalname)
@@ -50,7 +50,7 @@ const upload = multer({
             return cb(new Error("Only image are allowed !"))
         }
     }
-}).single("avatar"); //ten cua muc upload hinh
+}).single("file"); //ten cua muc upload hinh
     
 exports.register = async (req, res) => {
     if ((typeof req.body.name === 'undefined')
@@ -273,60 +273,63 @@ exports.forgotPassword = async (req, res) => {
     res.status(201).json({ msg: 'success' })
 }
 
-exports.updateInfor = async (req, res) => {
-    if ( typeof req.body.name === 'undefined'
-        || typeof req.body.email === 'undefined'
-        || typeof req.body.phone === 'undefined'
-        || typeof req.body.address === 'undefined'
-        || typeof req.body.avatar === 'undefined'
-    ) {
-        res.status(422).json({ msg: 'Invalid data' });
-        return;
-    }
-    
-    let { name, email, phone, address, avatar} = req.body;
-    let userFind
-    try {
-        userFind = await user.findOne({'email': email})
-    }
-    catch(err) {
-        res.status(500).json({ msg: err });
-        return;
-    }
-    if(userFind === null) {
-        res.status(422).json({ msg: "not found" });
-        return;
-    }
-  
-    userFind.name = name;
-    userFind.phone = phone
-    userFind.address = address;
-    upload(req, res, function(err){
+exports.updateInfor =  (req, res) => {
+
+    upload(req, res, async function(err){
         if(err instanceof multer.MulterError){
             res.json({"kq":0,"errMsg":"A Multer error occurred when uploading."});
         } else if(err){
             res.json({"kq":0,"errMsg":"An unknown error occurred when uploading." +err});
         } else{
-            userFind.avatar = req.file.filename;
+                if ( typeof req.body.name === 'undefined'
+                || typeof req.body.email === 'undefined'
+                || typeof req.body.phone === 'undefined'
+                || typeof req.body.address === 'undefined'
+                || typeof req.body.avatar === 'undefined'
+            ) {
+                res.status(422).json({ msg: 'Invalid data' });
+                return;
+            }
+            console.log(req.body)
+            let { name, email, phone, address, avatar} = req.body;
+            let userFind
+            try {
+                userFind =  await user.findOne({'email': email})
+            }
+            catch(err) {
+                res.status(500).json({ msg: err });
+                return;
+            }
+            if(userFind === null) {
+                res.status(422).json({ msg: "not found" });
+                return;
+            }
+            userFind.name = name;
+            userFind.phone = phone
+            userFind.address = address;
+            if(req.file){
+                userFind.avatar = req.file.filename
+            }
+            else userFind.avatar = avatar
+            
+            try {
+                await userFind.save()
+            }
+            catch(err) {
+                res.status(500).json({ msg: err });
+                return;
+            }
+            let token = jwt.sign({email: email}, 'shhhhh');
+            res.status(200).json({msg: 'success', token: token, user: {
+                name: userFind.name,
+                email: userFind.email,
+                phone: userFind.phone,
+                address: userFind.address,
+                avatar: userFind.avatar,
+                id: userFind._id
+            }});
         }
     });
-
-    try {
-        await userFind.save()
-    }
-    catch(err) {
-        res.status(500).json({ msg: err });
-        return;
-    }
-    let token = jwt.sign({email: email}, 'shhhhh');
-    res.status(200).json({msg: 'success', token: token, user: {
-        name: userFind.name,
-        email: userFind.email,
-        phoner: userFind.phone,
-        address: userFind.address,
-        avatar: userFind.avatar,
-        id: userFind._id
-    }});
 }
 
 exports.updatePassword = async (req, res) => {
@@ -384,11 +387,11 @@ exports.CreateNewTourDesign = async (req, res) => {
         || typeof req.body.name_tour === 'undefined'
         || typeof req.body.provider_id === 'undefined'
         || typeof req.body.description === 'undefined'
-        || typeof req.body.start_time === 'undefined'
-        || typeof req.body.end_time === 'undefined'
-        || typeof req.body.price === 'undefined'
+        || typeof req.body.time_start === 'undefined'
+        || typeof req.body.time_end === 'undefined'
         || typeof req.body.place_depart === 'undefined'
         || typeof req.body.messages === 'undefined'
+        || typeof req.body.route === 'undefined'
     ) {
         res.status(422).json({ msg: 'Invalid data' });
         return;
@@ -399,15 +402,16 @@ exports.CreateNewTourDesign = async (req, res) => {
         name_tour,
         provider_id,
         description,
-        start_time,
-        end_time,
+        time_start,
+        time_end,
         price,
         place_depart,
         messages,
         route
       } = req.body;
+      let userFind
       try {
-        userFind = await user.findOne({ user_id: user_id });
+        userFind = await user.findOne({ _id: user_id });
       } catch (err) {
         console.log("error ", err);
         res.status(500).json({ msg: err });
@@ -422,8 +426,8 @@ exports.CreateNewTourDesign = async (req, res) => {
         name_tour: name_tour,
         provider_id: provider_id,
         description: description,
-        start_time: start_time,
-        end_time: end_time,
+        start_time: time_start,
+        end_time: time_end,
         price : price,
         place_depart: place_depart,
         messages: messages,
@@ -461,6 +465,31 @@ exports.getHistoryByUser = async (req, res) => {
         return;
       }
       res.status(200).json({ data: historyBooking });
+   
+}
+
+//lay danh sach tour thiet ke cua user
+exports.getAllTourDesignByUser = async (req, res) => {
+    if (typeof req.params.user_id === "undefined") {
+        res.status(402).json({ msg: "data invalid" });
+        return;
+      }
+      let tourDesigns = null;
+   
+      try {
+        tourDesigns = await tour_design
+          .find({ user_id: req.params.user_id })
+        //   .sort({ date: -1 });
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({ msg: "Server error" });
+        return;
+      }
+      if(tourDesigns === null){
+        res.status(200).json({ data: [] });
+        return;
+      }
+      res.status(200).json({ data: tourDesigns });
    
 }
 
