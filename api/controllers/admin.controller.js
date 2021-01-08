@@ -33,7 +33,7 @@ const upload = multer({
 //user
 const storage_user = multer.diskStorage({
     destination: function(req, file, cb){
-        cb(null, 'public/user') //noi luu hinh tu set lai
+        cb(null, 'public/avatar') //noi luu hinh tu set lai
     },
     filename: function(req, file, cb){
         cb(null, Date.now()+ "-"+ file.originalname)
@@ -53,7 +53,7 @@ const upload_user = multer({
 //tour
 const storage_tour = multer.diskStorage({
     destination: function(req, file, cb){
-        cb(null, 'public/user') //noi luu hinh tu set lai
+        cb(null, 'public/tour') //noi luu hinh tu set lai
     },
     filename: function(req, file, cb){
         cb(null, Date.now()+ "-"+ file.originalname)
