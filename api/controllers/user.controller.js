@@ -290,7 +290,7 @@ exports.updateInfor =  (req, res) => {
                 res.status(422).json({ msg: 'Invalid data' });
                 return;
             }
-            console.log(req.body)
+            //console.log(req.body)
             let { name, email, phone, address, avatar} = req.body;
             let userFind
             try {
@@ -432,6 +432,7 @@ exports.CreateNewTourDesign = async (req, res) => {
         place_depart: place_depart,
         messages: messages,
         status: false,
+        confirm: false, 
         route: route
 
     })

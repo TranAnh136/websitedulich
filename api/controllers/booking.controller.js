@@ -1,6 +1,6 @@
 const booking = require('../models/booking.model');
-
-//thanh toán
+const nodemailer = require('../utils/nodemailer');
+//đặt tour
 exports.addBooking = async (req, res) => {
     if (
       typeof req.body.user_id === "undefined" ||
@@ -32,11 +32,11 @@ exports.addBooking = async (req, res) => {
       note
     } = req.body;
    
-   /* let sendEmail = await nodemailer.sendMailConfirmPayment(email_user_booking, token);
+   let sendEmail = await nodemailer.sendMailConfirmPayment(email_user_booking, tour_id,token);
     if (!sendEmail) {
       res.status(500).json({ msg: "Send email fail" });
       return;
-    }*/
+    }
     const addBooking  = new booking({
       user_id : user_id,
       tour_id : tour_id,
@@ -75,3 +75,34 @@ exports.addBooking = async (req, res) => {
       res.status(200).json({data: docs})
   })
 }
+
+//thanh toán
+exports.verifyPayment = async (req, res) => {
+  if (typeof req.params.token === "undefined") {
+    res.status(402).json({ msg: "!invalid" });
+    return;
+  }
+  let token = req.params.token;
+  let tokenFind = null;
+  try {
+    tokenFind = await booking.findOne({ token: token });
+  } catch (err) {
+    res.status(500).json({ msg: err });
+    return;
+  }
+  if (tokenFind == null) {
+    res.status(404).json({ msg: "not found!!!" });
+    return;
+  }
+  try {
+    await booking.findByIdAndUpdate(
+      tokenFind._id,
+      { $set: { status_booking: 'Đã thanh toán' } },
+      { new: true }
+    );
+  } catch (err) {
+    res.status(500).json({ msg: err });
+    return;
+  }
+  res.status(200).json({ msg: "success!" });
+}; 
