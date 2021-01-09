@@ -19,6 +19,9 @@ const provider = new Schema({
     address: {
         type: String
     },
+    account_id :{
+        type : String
+    },
     fax: {
         type: String
     },

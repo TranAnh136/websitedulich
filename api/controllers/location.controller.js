@@ -15,6 +15,39 @@ exports.getAllLocation = async (req, res) => {
     })
 }
 
+exports.getAllLocationOnPage = async(req, res) => {
+    if(typeof req.params.page === 'undefined') {
+        res.status(402).json({msg: 'Data invalid'});
+        return;
+    }
+    let count = null;
+    try { 
+        count = await location.count({});
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).json({msg: err});
+        return;
+    }
+    let totalPage = parseInt(((count - 1) / 9) + 1);
+    let { page } = req.params;
+    if ((parseInt(page) < 1) || (parseInt(page) > totalPage)) {
+        res.status(200).json({ data: [], msg: 'Invalid page', totalPage });
+        return;
+    }
+    location.find({})
+    .skip(9 * (parseInt(page) - 1))
+    .limit(9)
+    .exec((err, docs) => {
+        if(err) {
+            console.log(err);
+                    res.status(500).json({ msg: err });
+                    return;
+        }
+        res.status(200).json({ data: docs, totalPage });
+    })
+}
+
 exports.addLocation = async (req, res) => {
     if ((typeof req.body.name_location === 'undefined')
     || (typeof req.body.province_id === 'undefined'))
@@ -52,7 +85,7 @@ catch (err) {
 res.status(201).json({ msg: 'success' })
 }
 
-exports.updateLocation =  (req, res) => {
+exports.updateLocation = async (req, res) => {
 
     
             if ( typeof req.body.name_location === 'undefined'
@@ -91,13 +124,13 @@ exports.updateLocation =  (req, res) => {
 }
 
 exports.deleteLocation = async (req, res) => {
-    if (typeof req.params.id === 'undefined') {
+    if (typeof req.body.id === 'undefined') {
         res.status(422).json({ msg: 'Invalid data' });
         return;
     }
     let locationFind;
     try {
-        locationFind = await location.findById(req.params.id);
+        locationFind = await location.findById(req.body.id);
     }
     catch (err) {
         console.log(err)

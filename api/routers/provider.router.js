@@ -22,8 +22,11 @@ module.exports = app => {
   app.route('/provider/profile/:id')
   .post(provider_controller.showProfileProvider);
 
-  app.route('/provider/tourdesign')
-  .post(provider_controller.updateTourDesign);
+  app.route('/provider/accepttourdesign')
+  .post(provider_controller.acceptTourDesign);
+
+  app.route('/provider/rejecttourdesign')
+  .post(provider_controller.rejectTourDesign);
 
   app.route('/provider/login')
   .post(provider_controller.login);
@@ -52,7 +55,11 @@ module.exports = app => {
   app.route('/provider/:id')
   .get(provider_controller.getProviderById);
 
+  app.route('/provider/getAllTourDesign/:page')
+  .post(provider_controller.getAllTourDesign);
 
+  app.route('/provider/getproviderId/:id')
+  .get(provider_controller.getProviderId);
 
 
 };

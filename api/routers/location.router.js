@@ -13,4 +13,7 @@ module.exports = (app) => {
     app.route('/location/delete')
     .post(location_controller.deleteLocation);
 
+    app.route('/location/getAllLocation/:page')
+       .get(location_controller.getAllLocationOnPage);
+
 }

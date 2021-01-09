@@ -8,6 +8,7 @@ const provider = require('../models/provider.model');
 const contact = require('../models/contact.model')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const randomstring = require('randomstring');
 // const fs = require('fs');
 
 //provider
@@ -239,52 +240,64 @@ exports.deleteProvider = async (req, res) => {
 
 //user
 exports.addUser = async (req, res) => {
-    if ((typeof req.body.name === 'undefined')
-    || (typeof req.body.email === 'undefined')
-    || (typeof req.body.password === 'undefined')
-    || typeof req.body.phone === 'undefined'
-    || typeof req.body.address === 'undefined'
- 
-   
-    ) {
-        res.status(422).json({ msg: 'Invalid data' });
-        return;
-    }
-    let { name, email, password, phone, address, avatar, role } = req.body;
-    let userFind = null;
-    try {
-        userFind = await user.find({ 'email': email });
-    }
-    catch (err) {
-        res.status(500).json({ msg: err });
-        console.log(1)
-        return;
-    }
-    if (userFind.length > 0) {
-        res.status(409).json({ msg: 'Email đã tồn tại !' });
-        return;
-    }
-    password = bcrypt.hashSync(password, 10);
-    const token = randomstring.generate();
-    const newUser = new user({
-        name: name,
-        email: email,
-        password: password,
-        phone: phone,
-        address: address,
-        role: 0,
-        avatar: avatar.jpg,
-        token: token
+    upload_user(req, res, async function(err){
+        if(err instanceof multer.MulterError){
+            res.json({"kq":0,"errMsg":"A Multer error occurred when uploading."});
+        } else if(err){
+            res.json({"kq":0,"errMsg":"An unknown error occurred when uploading." +err});
+        } else{
+            console.log(req.body)
+            console.log(req.file)
+            if ((typeof req.body.name === 'undefined')
+            || (typeof req.body.email === 'undefined')
+            || (typeof req.body.password === 'undefined')
+            || typeof req.body.phone === 'undefined'
+            || typeof req.body.address === 'undefined'
+            || typeof req.body.role === 'undefined'
+            || typeof req.file === 'undefined'
+            ) {
+                res.status(422).json({ msg: 'Invalid data' });
+                return;
+            }
+            let { name, email, password, phone, address, role } = req.body;
+            let userFind = null;
+            try {
+                userFind = await user.find({ 'email': email });
+            }
+            catch (err) {
+                res.status(500).json({ msg: err });
+                console.log(1)
+                return;
+            }
+            if (userFind.length > 0) {
+                res.status(409).json({ msg: 'Email đã tồn tại !' });
+                return;
+            }
+            password = bcrypt.hashSync(password, 10);
+            const token = randomstring.generate();
+            const newUser = new user({
+                name: name,
+                email: email,
+                password: password,
+                phone: phone,
+                address: address,
+                role: role,
+                avatar:req.file.filename,
+                token: token
+            });
+            try {
+                await newUser.save();
+            }
+            catch (err) {
+                console.log(err);
+                res.status(500).json({ msg: err });
+                return;
+            }
+            res.status(201).json({ msg: 'success' });
+        }
     });
-    try {
-        await newUser.save();
-    }
-    catch (err) {
-        console.log(err);
-        res.status(500).json({ msg: err });
-        return;
-    }
-    res.status(201).json({ msg: 'success' });
+
+   
 } 
 
 exports.updateUser = async (req, res) => {
@@ -294,6 +307,7 @@ exports.updateUser = async (req, res) => {
         } else if(err){
             res.json({"kq":0,"errMsg":"An unknown error occurred when uploading." +err});
         } else{
+            console.log(req.body)
                 if ( typeof req.body.name === 'undefined'
                 || typeof req.body.email === 'undefined'
                 || typeof req.body.phone === 'undefined'
@@ -303,7 +317,7 @@ exports.updateUser = async (req, res) => {
                 res.status(422).json({ msg: 'Invalid data' });
                 return;
             }
-            //console.log(req.body)
+           // console.log(req.body)
             let { name, email, phone, address, avatar} = req.body;
             let userFind
             try {
@@ -320,6 +334,7 @@ exports.updateUser = async (req, res) => {
             userFind.name = name;
             userFind.phone = phone
             userFind.address = address;
+            console.log(req.file)
             if(req.file){
                 userFind.avatar = req.file.filename
             }
@@ -468,7 +483,7 @@ exports.login = async (req, res) => {
     let { email, password } = req.body;
     let userFind = null; 
     try{
-        userFind = await user.findOne({'email': email, role: { $nin: [0] }}); 
+        userFind = await user.findOne({'email': email, "role": { $nin: [0] }}); 
     }
     catch(err){
         res.json({msg: err});
@@ -481,7 +496,7 @@ exports.login = async (req, res) => {
 
     
     if(!bcrypt.compareSync(password, userFind.password)){
-        res.status(422).json({msg: 'Invalid data'});
+        res.status(422).json({msg: 'wrong pass'});
         return;
     }
   
@@ -493,7 +508,8 @@ exports.login = async (req, res) => {
         address: userFind.address,
         phone: userFind.phone,
         id: userFind._id,
-        role: role 
+        avatar : userFind.avatar,
+        role: userFind.role 
     }});
     }
    

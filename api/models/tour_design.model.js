@@ -51,7 +51,8 @@ const tour_design = new Schema({
         default: false,
     },
     confirm: {
-        type: Boolean
+        type: Boolean,
+        default: null
     },
     route: {
         type: [

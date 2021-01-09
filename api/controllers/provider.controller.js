@@ -34,58 +34,62 @@ const upload = multer({
 }).single("avatar"); //ten cua muc upload hinh
 
 //chap nhan tour design tu nguoi dung
-exports.updateTourDesign= async(req,res) =>{
+exports.acceptTourDesign= async(req,res) =>{
     if ( typeof req.body.user_id === "undefined"
         || typeof req.body.name_tour === 'undefined'
         || typeof req.body.provider_id === 'undefined'
         || typeof req.body.description === 'undefined'
-        || typeof req.body.start_time === 'undefined'
-        || typeof req.body.end_time === 'undefined'
+        || typeof req.body.time_start === 'undefined'
+        || typeof req.body.time_end === 'undefined'
         || typeof req.body.price === 'undefined'
         || typeof req.body.place_depart === 'undefined'
         || typeof req.body.messages === 'undefined'
+        || typeof req.body.route === 'undefined'
+        || typeof req.body.id === 'undefined'
     ) {
         res.status(422).json({ msg: 'Invalid data' });
         return;
     }
     
-    let {user_id, name_tour, provider_id, description, start_time, end_time, price, place_depart, messages} = req.body;
-    let tourDesignFind, updateStatus;
+    let {id, user_id, name_tour, provider_id, description, time_start, time_end, price, place_depart, messages, route} = req.body;
+    let tourDesignFind
     try {
-        tourDesignFind = await tour_design.findOne({'provider_id': provider_id})
-        updateStatus = await tour_design.findOne({'user_id': user_id})
+        tourDesignFind = await tour_design.findOne({'_id': id})
     }
     catch(err) {
         res.status(500).json({ msg: err });
         return;
     }
-    if(tourDesignFind === null || updateStatus=== null) {
+    if(tourDesignFind === null) {
         res.status(422).json({ msg: "not found" });
         return;
     }
-
-    const newTour = new tour({
-        name_tour: name_tour,
-        provider_id: provider_id,
-        description: description,
-        time_start: start_time,
-        time_end: end_time,
-        price :1500000,
-        id_discount: false,
-        capacity: 20,
-        image_cover: route.images,
-        place_depart: place_depart,
-        category_tour_id: "trong nuoc",
-        route: route
-
-    })
-
-    updateStatus.status = true;
+    let oldRoute  = tourDesignFind.route;
+    let newRoute = []
+    for(let i = 0 ; i< oldRoute.length ;  i++){
+        objRoute = {
+            ...oldRoute[i],
+            "date_happen" : route[i].date_happen,
+            "title" : route[i].title,
+            "description" : route[i].description
+        }
+        newRoute.push(objRoute)
+    }
+    tourDesignFind.user_id = user_id;
+    tourDesignFind.name_tour = name_tour;
+    tourDesignFind.provider_id = provider_id;
+    tourDesignFind.description = description;
+    tourDesignFind.time_start = time_start;
+    tourDesignFind.time_end = time_end;
+    tourDesignFind.price = price;
+    tourDesignFind.place_depart = place_depart;
+    tourDesignFind.messages = messages;
+    tourDesignFind.status = true;
     tourDesignFind.confirm = true;
+    tourDesignFind.route = newRoute
+
     try {
-        await newTour.save()
         await tourDesignFind.save()
-        await updateStatus.save()
     }
     catch(err) {
         res.status(500).json({ msg: err });
@@ -93,6 +97,35 @@ exports.updateTourDesign= async(req,res) =>{
     }
     res.status(201).json({ msg: "success" });
 } 
+
+exports.rejectTourDesign = async (req, res) => {
+    if (  typeof req.body.id === 'undefined') {
+        res.status(422).json({ msg: 'Invalid data' });
+        return;
+    }
+    let tourDesignFind
+    try {
+        tourDesignFind = await tour_design.findOne({'_id': req.body.id})
+    }
+    catch(err) {
+        res.status(500).json({ msg: err });
+        return;
+    }
+    if(tourDesignFind === null) {
+        res.status(422).json({ msg: "not found" });
+        return;
+    }
+    tourDesignFind.status = true;
+    tourDesignFind.confirm = false;
+    try {
+        await tourDesignFind.save()
+    }
+    catch(err) {
+        res.status(500).json({ msg: err });
+        return;
+    }
+    res.status(201).json({ msg: "success" });
+}
 
 exports.getProvider = (req, res) => {
     provider.find({}, (err, docs) => {
@@ -643,4 +676,61 @@ exports.updaterProvider = async (req, res) => {
             res.status(200).json({ msg: 'success', data: providerFind});
         }
     });
+}
+
+exports.getAllTourDesign = async(req, res) => {
+    if(typeof req.params.page === 'undefined'
+    || typeof req.body.id === 'undefined') {
+        res.status(402).json({msg: 'Data invalid'});
+        return;
+    }
+    let count = null;
+    try { 
+        count = await tour_design.count({'provider_id' : provider_id});
+    }
+    catch(err) {
+        console.log(err);
+        res.status(500).json({msg: err});
+        return;
+    }
+    let totalPage = parseInt(((count - 1) / 9) + 1);
+    let { page } = req.params;
+    if ((parseInt(page) < 1) || (parseInt(page) > totalPage)) {
+        res.status(200).json({ data: [], msg: 'Invalid page', totalPage });
+        return;
+    }
+    tour_design.find({'provider_id' : provider_id})
+    .skip(9 * (parseInt(page) - 1))
+    .limit(9)
+    .exec((err, docs) => {
+        if(err) {
+            console.log(err);
+                    res.status(500).json({ msg: err });
+                    return;
+        }
+        res.status(200).json({ data: docs, totalPage });
+    })
+}
+
+exports.getProviderId = async (req, res) => {
+    if(typeof req.params.id === 'undefined'){
+        res.status(402).json({msg: "Invalid data"});
+        return;
+    }
+    let providerFind = null;
+    try{
+        providerFind = await provider.findOne({'account_id': id});
+    }
+    catch(err){
+        res.json({msg: err});
+        return;
+    }
+    if(providerFind == null){
+        res.status(422).json({msg: "Not found"});
+        return;
+    }
+    else{
+        res.status(200).json({id : providerFind._id})
+    }
+   
 }
